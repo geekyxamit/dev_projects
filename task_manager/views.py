@@ -36,6 +36,10 @@ class CreateAndViewUser(APIView):
         if data.get("last_name") is None or data.get("last_name").strip() == "":
             return Response({"error": "Last Name not given",
                              "success": False})
+        
+        if data.get("email") is None or data.get("email").strip() == "":
+            return Response({"error": "Email not given",
+                             "success": False})
             
         ser_data = UserSerializer(data=data)
         if ser_data.is_valid():
