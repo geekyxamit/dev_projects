@@ -9,6 +9,7 @@ from .serializers import *
 
 
 class CreateAndViewUser(APIView):
+    # method to view users
     def get(self, request, *args, **kwargs):
         data = request.GET
         user_obj = None
@@ -23,8 +24,18 @@ class CreateAndViewUser(APIView):
         return Response({"user_data": ser_data,
                          "success": True})
     
+    
+    # method to create a new user
     def post(self, request, *args, **kwargs):
         data = request.data
+        if data.get("first_name") is None or data.get("first_name").strip() == "":
+            return Response({"error": "First Name not given",
+                             "success": False})
+        
+        if data.get("last_name") is None or data.get("last_name").strip() == "":
+            return Response({"error": "Last Name not given",
+                             "success": False})
+            
         ser_data = UserSerializer(data=data)
         if ser_data.is_valid():
             ser_data.save()
@@ -33,5 +44,4 @@ class CreateAndViewUser(APIView):
                              "success": False})
         return Response({"message": "User created successfully",
                          "success": True})
-    
     
