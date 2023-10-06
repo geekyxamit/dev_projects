@@ -11,3 +11,4 @@ class Tasks(models.Model):
     due_date = models.DateField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="task_creator")
     assignee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="task_assignee")
+    
