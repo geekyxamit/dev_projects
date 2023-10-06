@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import request
 from .serializers import *
 import datetime
+from django.core.mail import EmailMultiAlternatives
 
 # Create your views here.
 
@@ -100,7 +101,8 @@ class CreateAndViewTask(APIView):
             # searching assignee user in DB
             assignee_obj  = User.objects.filter(id=assignee_id).first()
             
-            if assignee_obj is None:
+            if assignee_id == data["created_by"] or assignee_obj is None:
+                # if creator and assignee is same, skip this id
                 # if assignee with given id not found then skip this id
                 unassigned_id_list.append(assignee_id)
                 continue
@@ -108,6 +110,8 @@ class CreateAndViewTask(APIView):
             ser_data = TasksSerializer(data=data)
             if ser_data.is_valid():
                 ser_data.save()
+                # storing success assignee emails
+                email_receivers.append(assignee_obj.email)
                 
             else:
                 # if serializer is invalid, then akip this id
@@ -118,6 +122,14 @@ class CreateAndViewTask(APIView):
         if len(unassigned_id_list) == len(data["assignee_ids"]):
             return Response({"error": "Task not created",
                              "success": False})
+        
+        
+        ## sending email to task assignees (smtp connection not established)
+        
+        # email_msg = "You have been assigned a task."
+        # subject = "Task Assigned"
+        # msg = EmailMultiAlternatives(subject, email_msg, "sender@gmail.com", [email_receivers])
+        # msg.send()
         
         return Response({"message": "Task created successfully",
                          "unassigned_ids": unassigned_id_list,
