@@ -78,9 +78,18 @@ class CreateAndViewTask(APIView):
             return Response({"error": "Task creator not given",
                              "success": False})
         
+        # check for duplicate task name
+        task_objs = Tasks.objects.filter(task_title=data["task_title"]).first()
+        # print(task_objs)
+        if task_objs is not None:
+            return Response({"error": "Task with this title already exist",
+                             "success": False})
+        
         data["due_date"] = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
+        # print(data["due_date"])
         
         unassigned_id_list = []
+        email_receivers = []
         
         for assignee_id in data["assignee_ids"]:
             data["assignee"] = assignee_id
@@ -95,10 +104,19 @@ class CreateAndViewTask(APIView):
             ser_data = TasksSerializer(data=data)
             if ser_data.is_valid():
                 ser_data.save()
+                
             else:
                 # if serializer is invalid, then akip this id
                 unassigned_id_list.append(assignee_id)
-                
+        
+        
+        # None of the assignee is valid, then task not created        
+        if len(unassigned_id_list) == len(data["assignee_ids"]):
+            return Response({"error": "Task not created",
+                             "success": False})
+        
         return Response({"message": "Task created successfully",
                          "unassigned_ids": unassigned_id_list,
                          "success": True})
+        
+         
