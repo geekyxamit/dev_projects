@@ -1,10 +1,6 @@
 from django.test import TestCase
-
-# Create your tests here.
 from django.urls import reverse
 import datetime
-# from rest_framework import status
-# from rest_framework.test import APITestCase
 from .models import Tasks, CustomUser, TaskAssigneeMapping
 
 class CreateAndViewTaskTests(TestCase):
