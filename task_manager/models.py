@@ -14,6 +14,8 @@ class Tasks(models.Model):
     task_description = models.TextField()
     due_date = models.DateField()
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="task_creator")
+    task_status = models.CharField(max_length=100, default="open", null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     
 class TaskAssigneeMapping(models.Model):
     task = models.ForeignKey(Tasks, on_delete=models.CASCADE, related_name="assigned_task")

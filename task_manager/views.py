@@ -7,8 +7,10 @@ from .serializers import *
 import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.core.paginator import Paginator
+from .utility import *
 
 # Create your views here.
+
 
 class CreateAndViewUser(APIView):
     # method to view users
@@ -31,17 +33,11 @@ class CreateAndViewUser(APIView):
     # method to create a new user
     def post(self, request, *args, **kwargs):
         data = request.data
-        if data.get("first_name") is None or data.get("first_name").strip() == "":
-            return Response({"error": "First Name not given",
-                             "success": False})
         
-        if data.get("last_name") is None or data.get("last_name").strip() == "":
-            return Response({"error": "Last Name not given",
-                             "success": False})
-        
-        if data.get("email") is None or data.get("email").strip() == "":
-            return Response({"error": "Email not given",
-                             "success": False})
+        # validate id all data fields are present
+        validate_res = validate_userdata(data)
+        if validate_res != "OK":
+            return validate_res
             
         ser_data = CustomUserSerializer(data=data)
         if ser_data.is_valid():
@@ -54,15 +50,10 @@ class CreateAndViewUser(APIView):
     
 
 
-# function to paginate the data
-def pagi(data, task_obj):
-    obj_per_page = data.get("per_page") if data.get("per_page") else 3
-    page_number = data.get("page") if data.get("page") else 1
-    
-    paginator = Paginator(task_obj, per_page=obj_per_page)
-    page_object = paginator.get_page(page_number)
-    return {"obj":page_object,
-            "page_number": page_number}
+def filter_duedate(data, task_obj):
+    dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
+    task_obj = task_obj.filter(due_date__lte=dd)
+    return task_obj
 
 
 class CreateAndViewTask(APIView):
@@ -75,12 +66,18 @@ class CreateAndViewTask(APIView):
         # created by a user_id filter
         if data.get("creator_id") is not None:
             task_obj = task_obj.filter(created_by=data["creator_id"])
+            if data.get("due_date") is not None:
+                task_obj = filter_duedate(data, task_obj)
+                
             page_object = pagi(data, task_obj)
             ser_data = CreatedTaskSerializer(page_object["obj"], many=True).data
             
         # assigned to a user_id filter
         elif data.get("assignee_id") is not None:
             task_obj = task_obj.filter(assigned_task__assignee_id=data["assignee_id"])
+            if data.get("due_date") is not None:
+                task_obj = filter_duedate(data, task_obj)
+                
             page_object = pagi(data, task_obj)
             ser_data = AssignedTasksSerializer(page_object["obj"], many=True).data
             
@@ -106,25 +103,10 @@ class CreateAndViewTask(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         
-        if data.get("task_title") is None or data.get("task_title").strip() == "":
-            return Response({"error": "Task Title not given",
-                             "success": False})
-        
-        if data.get("task_description") is None or data.get("task_description").strip() == "":
-            return Response({"error": "Task Description not given",
-                             "success": False})
-            
-        if data.get("due_date") is None:
-            return Response({"error": "Task due date not given",
-                             "success": False})
-        
-        if data.get("assignee_ids") is None:
-            return Response({"error": "Task assignee IDs not given",
-                             "success": False})
-        
-        if data.get("created_by") is None:
-            return Response({"error": "Task creator not given",
-                             "success": False})
+        # validating given task data
+        validate_res = validate_taskdata(data)
+        if validate_res != "OK":
+            return validate_res
         
         # check for duplicate task name
         task_objs = Tasks.objects.filter(task_title=data["task_title"]).first()
