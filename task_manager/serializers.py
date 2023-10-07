@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Tasks
+from .models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -13,4 +13,8 @@ class TasksSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 
+class TaskAssigneeMappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskAssigneeMapping
+        fields = "__all__"
     
