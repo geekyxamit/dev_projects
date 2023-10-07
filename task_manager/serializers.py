@@ -2,9 +2,9 @@ from rest_framework import serializers
 from .models import *
 
 
-class UserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = "__all__"
         
 class TasksSerializer(serializers.ModelSerializer):

@@ -10,7 +10,6 @@ from django.core.paginator import Paginator
 
 # Create your views here.
 
-
 class CreateAndViewUser(APIView):
     # method to view users
     def get(self, request, *args, **kwargs):
@@ -18,11 +17,12 @@ class CreateAndViewUser(APIView):
         user_obj = None
         ser_data = None
         if data.get("id"):
-            user_obj = User.objects.filter(id=data["id"]).first()
-            ser_data = UserSerializer(user_obj).data
+            user_obj = CustomUser.objects.filter(id=data["id"]).first()
+            ser_data = CustomUserSerializer(user_obj).data
         else:
-            user_obj = User.objects.all()
-            ser_data = UserSerializer(user_obj, many=True).data
+            user_obj = CustomUser.objects.all()
+            print(user_obj)
+            ser_data = CustomUserSerializer(user_obj, many=True).data
         
         return Response({"user_data": ser_data,
                          "success": True})
@@ -43,7 +43,7 @@ class CreateAndViewUser(APIView):
             return Response({"error": "Email not given",
                              "success": False})
             
-        ser_data = UserSerializer(data=data)
+        ser_data = CustomUserSerializer(data=data)
         if ser_data.is_valid():
             ser_data.save()
         else:
@@ -54,7 +54,7 @@ class CreateAndViewUser(APIView):
     
 
 
-# paginating the data
+# function to paginate the data
 def pagi(data, task_obj):
     obj_per_page = data.get("per_page") if data.get("per_page") else 3
     page_number = data.get("page") if data.get("page") else 1
@@ -148,7 +148,7 @@ class CreateAndViewTask(APIView):
         
         for assignee_id in data["assignee_ids"]:
             # searching assignee user in DB
-            assignee_obj  = User.objects.filter(id=assignee_id).first()
+            assignee_obj  = CustomUser.objects.filter(id=assignee_id).first()
             
             if assignee_id == data["created_by"] or assignee_obj is None:
                 # if creator and assignee is same OR assignee id not found
@@ -165,7 +165,7 @@ class CreateAndViewTask(APIView):
                 email_receivers.append(assignee_obj.email)
                 
             else:
-                # if serializer is invalid, then akip this id
+                # if serializer is invalid, then skip this id
                 unassigned_id_list.append(assignee_id)
         
         
