@@ -37,7 +37,7 @@ class CreateAndViewUser(APIView):
         # validate id all data fields are present
         validate_res = validate_userdata(data)
         if validate_res != "OK":
-            return validate_res
+            return Response(validate_res)
             
         ser_data = CustomUserSerializer(data=data)
         if ser_data.is_valid():
@@ -48,12 +48,6 @@ class CreateAndViewUser(APIView):
         return Response({"message": "User created successfully",
                          "success": True})
     
-
-
-def filter_duedate(data, task_obj):
-    dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
-    task_obj = task_obj.filter(due_date__lte=dd)
-    return task_obj
 
 
 class CreateAndViewTask(APIView):
@@ -67,7 +61,7 @@ class CreateAndViewTask(APIView):
         if data.get("creator_id") is not None:
             task_obj = task_obj.filter(created_by=data["creator_id"])
             if data.get("due_date") is not None:
-                task_obj = filter_duedate(data, task_obj)
+                task_obj = self.filter_duedate(data, task_obj)
                 
             page_object = pagi(data, task_obj)
             ser_data = CreatedTaskSerializer(page_object["obj"], many=True).data
@@ -76,15 +70,14 @@ class CreateAndViewTask(APIView):
         elif data.get("assignee_id") is not None:
             task_obj = task_obj.filter(assigned_task__assignee_id=data["assignee_id"])
             if data.get("due_date") is not None:
-                task_obj = filter_duedate(data, task_obj)
+                task_obj = self.filter_duedate(data, task_obj)
                 
             page_object = pagi(data, task_obj)
             ser_data = AssignedTasksSerializer(page_object["obj"], many=True).data
             
         # due_date filter
         elif data.get("due_date") is not None:
-            dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
-            task_obj = task_obj.filter(due_date__lte=dd)
+            task_obj = self.filter_duedate(data, task_obj)
             page_object = pagi(data, task_obj)
             ser_data = TasksSerializer(page_object["obj"], many=True).data
         
@@ -106,7 +99,7 @@ class CreateAndViewTask(APIView):
         # validating given task data
         validate_res = validate_taskdata(data)
         if validate_res != "OK":
-            return validate_res
+            return Response(validate_res)
         
         # check for duplicate task name
         task_objs = Tasks.objects.filter(task_title__iexact=data["task_title"]).first()
@@ -115,8 +108,7 @@ class CreateAndViewTask(APIView):
             return Response({"error": "Task with this title already exist",
                              "success": False})
         
-        data["due_date"] = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
-        # print(data["due_date"])
+        data["due_date"] = datetime.datetime.strptime("2024-10-15 23:59:00", "%Y-%m-%d %H:%M:%S").date()
         
         task_ser = TasksSerializer(data=data)
         if task_ser.is_valid():
@@ -183,4 +175,10 @@ class CreateAndViewTask(APIView):
         task_obj.delete()
         return Response({"error": "Task deleted",
                          "success": True})
+
+
+    def filter_duedate(self, data, task_obj):
+        dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
+        task_obj = task_obj.filter(due_date__lte=dd)
+        return task_obj
 

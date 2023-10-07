@@ -33,15 +33,12 @@ def validate_taskdata(data):
     if data.get("task_description") is None or data.get("task_description").strip() == "":
         return {"error": "Task Description not given",
                             "success": False}
-        
     if data.get("due_date") is None:
         return {"error": "Task due date not given",
                             "success": False}
-    
     if data.get("assignee_ids") is None:
         return {"error": "Task assignee IDs not given",
                             "success": False}
-    
     if data.get("created_by") is None:
         return {"error": "Task creator not given",
                             "success": False}
