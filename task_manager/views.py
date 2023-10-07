@@ -57,7 +57,24 @@ class CreateAndViewTask(APIView):
     
     # method to view tasks
     def get(self, request, *args, **kwargs):
-        pass
+        data = request.GET
+        task_obj = Tasks.objects.all();
+        
+        if data.get("creator_id") is not None:
+            task_obj = task_obj.filter(created_by=data["creator_id"])
+            
+        elif data.get("assignee_id") is not None:
+            task_obj = task_obj.filter(assignee=data["assignee_id"])
+            
+        elif data.get("due_date") is not None:
+            dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
+            task_obj = task_obj.filter(due_date__lte=dd)
+        
+        ser_data = TasksSerializer(task_obj, many=True).data
+        return Response({"tasks_data": ser_data,
+                         "success": True})
+        
+    
     
     # method to create a task
     def post(self, request, *args, **kwargs):
