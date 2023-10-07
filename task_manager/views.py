@@ -90,25 +90,12 @@ class CreateAndViewTask(APIView):
             print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = TasksSerializer(page_object["obj"], many=True).data
+        
         else:
             print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = TasksSerializer(page_object["obj"], many=True).data
         
-        
-        
-        # ser_data = TasksSerializer(page_object, many=True).data
-        
-        # if "assignee_id" in data:
-        #     # ser_data = TasksSerializer()
-        #     pass
-        # elif "creat"
-        
-        # ser_data = TasksSerializer(page_object, many=True).data
-        
-        # for d in ser_data:
-        #     d["assignee"] = TaskAssigneeMapping.objects.filter(task_id=d["id"]).\
-        #         values_list('assignee', flat=True)
         
         return Response({"tasks_data": ser_data,
                          "page_number": page_object["page_number"],
@@ -149,7 +136,7 @@ class CreateAndViewTask(APIView):
         data["due_date"] = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
         # print(data["due_date"])
         
-        task_ser = TaskAssigneeMappingSerializer(data=data)
+        task_ser = TasksSerializer(data=data)
         if task_ser.is_valid():
             newtask = task_ser.save()
         else:
