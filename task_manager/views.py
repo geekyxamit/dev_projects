@@ -54,6 +54,17 @@ class CreateAndViewUser(APIView):
     
 
 
+# paginating the data
+def pagi(data, task_obj):
+    obj_per_page = data.get("per_page") if data.get("per_page") else 3
+    page_number = data.get("page") if data.get("page") else 1
+    
+    paginator = Paginator(task_obj, per_page=obj_per_page)
+    page_object = paginator.get_page(page_number)
+    return {"obj":page_object,
+            "page_number": page_number}
+
+
 class CreateAndViewTask(APIView):
     
     # method to view tasks
@@ -63,25 +74,44 @@ class CreateAndViewTask(APIView):
         
         if data.get("creator_id") is not None:
             task_obj = task_obj.filter(created_by=data["creator_id"])
+            print(task_obj.count())
+            page_object = pagi(data, task_obj)
+            ser_data = CreatedTaskSerializer(page_object["obj"], many=True).data
             
         elif data.get("assignee_id") is not None:
-            task_obj = task_obj.filter(assignee=data["assignee_id"])
+            task_obj = task_obj.filter(assigned_task__assignee_id=data["assignee_id"])
+            print(task_obj.count())
+            page_object = pagi(data, task_obj)
+            ser_data = AssignedTasksSerializer(page_object["obj"], many=True).data
             
         elif data.get("due_date") is not None:
             dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
             task_obj = task_obj.filter(due_date__lte=dd)
+            print(task_obj.count())
+            page_object = pagi(data, task_obj)
+            ser_data = TasksSerializer(page_object["obj"], many=True).data
+        else:
+            print(task_obj.count())
+            page_object = pagi(data, task_obj)
+            ser_data = TasksSerializer(page_object["obj"], many=True).data
         
-        # paginating the data
-        obj_per_page = data.get("per_page") if data.get("per_page") else 3
-        page_number = data.get("page") if data.get("page") else 1
         
-        paginator = Paginator(task_obj, per_page=obj_per_page)
-        page_object = paginator.get_page(page_number)
         
-        ser_data = TasksSerializer(page_object, many=True).data
+        # ser_data = TasksSerializer(page_object, many=True).data
+        
+        # if "assignee_id" in data:
+        #     # ser_data = TasksSerializer()
+        #     pass
+        # elif "creat"
+        
+        # ser_data = TasksSerializer(page_object, many=True).data
+        
+        # for d in ser_data:
+        #     d["assignee"] = TaskAssigneeMapping.objects.filter(task_id=d["id"]).\
+        #         values_list('assignee', flat=True)
         
         return Response({"tasks_data": ser_data,
-                         "page_number": page_number,
+                         "page_number": page_object["page_number"],
                          "success": True})
           
     
@@ -119,7 +149,7 @@ class CreateAndViewTask(APIView):
         data["due_date"] = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
         # print(data["due_date"])
         
-        task_ser = TasksSerializer(data=data)
+        task_ser = TaskAssigneeMappingSerializer(data=data)
         if task_ser.is_valid():
             newtask = task_ser.save()
         else:
