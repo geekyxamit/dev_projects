@@ -6,6 +6,7 @@ from rest_framework import request
 from .serializers import *
 import datetime
 from django.core.mail import EmailMultiAlternatives
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -70,8 +71,17 @@ class CreateAndViewTask(APIView):
             dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
             task_obj = task_obj.filter(due_date__lte=dd)
         
-        ser_data = TasksSerializer(task_obj, many=True).data
+        # paginating the data
+        obj_per_page = data.get("per_page") if data.get("per_page") else 3
+        page_number = data.get("page") if data.get("page") else 1
+        
+        paginator = Paginator(task_obj, per_page=obj_per_page)
+        page_object = paginator.get_page(page_number)
+        
+        ser_data = TasksSerializer(page_object, many=True).data
+        
         return Response({"tasks_data": ser_data,
+                         "page_number": page_number,
                          "success": True})
         
     
