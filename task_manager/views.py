@@ -72,27 +72,27 @@ class CreateAndViewTask(APIView):
         data = request.GET
         task_obj = Tasks.objects.all();
         
+        # created by a user_id filter
         if data.get("creator_id") is not None:
             task_obj = task_obj.filter(created_by=data["creator_id"])
-            print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = CreatedTaskSerializer(page_object["obj"], many=True).data
             
+        # assigned to a user_id filter
         elif data.get("assignee_id") is not None:
             task_obj = task_obj.filter(assigned_task__assignee_id=data["assignee_id"])
-            print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = AssignedTasksSerializer(page_object["obj"], many=True).data
             
+        # due_date filter
         elif data.get("due_date") is not None:
             dd = datetime.datetime.strptime(data["due_date"], "%Y-%m-%d %H:%M:%S").date()
             task_obj = task_obj.filter(due_date__lte=dd)
-            print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = TasksSerializer(page_object["obj"], many=True).data
         
+        # no filter - all tasks
         else:
-            print(task_obj.count())
             page_object = pagi(data, task_obj)
             ser_data = TasksSerializer(page_object["obj"], many=True).data
         
