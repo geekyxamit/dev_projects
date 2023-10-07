@@ -109,7 +109,7 @@ class CreateAndViewTask(APIView):
             return validate_res
         
         # check for duplicate task name
-        task_objs = Tasks.objects.filter(task_title=data["task_title"]).first()
+        task_objs = Tasks.objects.filter(task_title__iexact=data["task_title"]).first()
         # print(task_objs)
         if task_objs is not None:
             return Response({"error": "Task with this title already exist",
