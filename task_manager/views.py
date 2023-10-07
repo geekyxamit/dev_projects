@@ -189,4 +189,16 @@ class CreateAndViewTask(APIView):
         
     
     def delete(self, request, *args, **kwargs):
-        pass     
+        data = request.data
+        if data.get("id") is None:
+            return Response({"error": "provide task id that needs to be deleted",
+                             "success": False})
+        
+        task_obj = Tasks.objects.filter(id=data["id"]).first()
+        if task_obj is None:
+            return Response({"error": "No task with this id",
+                             "success": False})
+        task_obj.delete()
+        return Response({"error": "Task deleted",
+                         "success": True})
+
