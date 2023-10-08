@@ -2,7 +2,7 @@
 
 
 # All the APIs are tested on localhost server.
-# Install all the required dependencies before running APIs.
+# Install all the required dependencies in virtual environment 'venv' before running APIs.
 
 1. To create and view all users
 Base Url - ‘http://127.0.0.1:8000/users’
@@ -303,4 +303,20 @@ Url - “http://127.0.0.1:8000/tasks/”
 {
     "error": "Task not created",
     "success": false
+}
+
+
+
+
+
+> to delete a task
+Method - DELETE
+Url - “http://127.0.0.1:8000/tasks/”
+        Body = {
+    "id": 9
+}
+Expected Output
+{
+    "message": "Task deleted",
+    "success": true
 }

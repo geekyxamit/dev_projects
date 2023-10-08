@@ -173,7 +173,7 @@ class CreateAndViewTask(APIView):
             return Response({"error": "No task with this id",
                              "success": False})
         task_obj.delete()
-        return Response({"error": "Task deleted",
+        return Response({"message": "Task deleted",
                          "success": True})
 
 
