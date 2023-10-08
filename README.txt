@@ -2,7 +2,7 @@
 
 
 # All the APIs are tested on localhost server.
-# Install all the required dependencies in virtual environment 'venv' before running APIs.
+# Create a virtual environment and install dependencies given in requirements.txt file.
 
 1. To create and view all users
 Base Url - ‘http://127.0.0.1:8000/users’
