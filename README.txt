@@ -1,8 +1,13 @@
 ﻿Task Manager
+1. Open project directory and create a virtual environment using  command “python -m venv <name_of_virtual_environment>” and activate it using command, for windows - “<name_of_virtual_environment>\Scripts\activate” , for mac/linux - “<name_of_virtual_environment>/bin/activate”.
+2. Install all requirements using “pip install -r requirements.txt” command.
+3. Run command “python manage.py makemigrations” to create migration files.
+4. Run command “python manage.py migrate” to create tables in DB.
 
 
-# All the APIs are tested on localhost server.
-# Create a virtual environment and install dependencies given in requirements.txt file.
+Notes:
+# All the APIs are tested on localhost server and kindly test them on your local machine and localhost server.
+# Install all the required dependencies before running APIs.
 
 1. To create and view all users
 Base Url - ‘http://127.0.0.1:8000/users’
